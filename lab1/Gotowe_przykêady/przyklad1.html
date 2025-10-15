@@ -1,0 +1,269 @@
+<!DOCTYPE html> 
+ <html>
+     <head>
+         <title>Przykład 01 - 3D</title>
+         <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1">
+         <style type="text/css">
+             body {
+                 background-color: #000000;
+                 overflow: hidden;
+             }
+         </style>
+         <script src="three.js"></script>
+         <script src="Detector.js"></script>
+     </head>
+     <body>
+         <div id="WebGLCanvas"> </div>
+
+         <script>
+             // Konrad Kurzydym
+           var scene;
+           var camera;
+           var treeMeshes = [];
+           var isCameraGoingUp = true;
+           var degreesInRad_90 = 1.5707963268;
+
+           initializeScene();
+
+           animateScene();
+
+           function initializeScene(){
+               if(Detector.webgl){
+                   renderer = new THREE.WebGLRenderer({antialias:true});
+               } else {
+                   renderer = new THREE.CanvasRenderer();
+               }
+
+               renderer.setClearColor(0xb8ffff, 1);
+               canvasWidth = window.innerWidth;
+               canvasHeight = window.innerHeight;
+               renderer.setSize(canvasWidth, canvasHeight);
+               document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+
+               scene = new THREE.Scene();
+
+               camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
+               camera.position.set(0, -0.5, 20);
+               camera.lookAt(scene.position);
+               scene.add(camera);
+
+               createGround();
+               createHouse();
+               createTree(-2, 0.0, 4.0);
+               createTree(-4.6, 0.0, -2.0);
+               createTree(-5, 0.0, 4.0);
+           }
+           
+           function createTree(a, b, c) {
+                var treeGeometry = new THREE.Geometry();
+               
+               var triangleGeometry = new THREE.Geometry();
+               triangleGeometry.vertices.push(new THREE.Vector3( 0.0,  1.0, 0.0));
+               triangleGeometry.vertices.push(new THREE.Vector3(-1.0, -1.0, 0.0));
+               triangleGeometry.vertices.push(new THREE.Vector3( 1.0, -1.0, 0.0));
+               triangleGeometry.faces.push(new THREE.Face3(0, 1, 2));
+
+               triangleGeometry.faces[0].vertexColors[0] = new THREE.Color('lightgreen');
+               triangleGeometry.faces[0].vertexColors[1] = new THREE.Color('darkgreen');
+               triangleGeometry.faces[0].vertexColors[2] = new THREE.Color('darkgreen');
+
+               var triangleMaterial = new THREE.MeshBasicMaterial({
+                   vertexColors:THREE.VertexColors,
+                   side:THREE.DoubleSide
+               });
+
+               triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                treeMeshes.push(triangleMesh);
+               scene.add(triangleMesh);
+               triangleMesh.position.set(a, b, c);
+                
+               addTreeMeshClone(triangleMesh, 0, degreesInRad_90);
+
+               addTreeMeshClone(triangleMesh, 1, 0);
+               addTreeMeshClone(triangleMesh, 1, degreesInRad_90);
+
+               addTreeMeshClone(triangleMesh, 2, 0);
+               addTreeMeshClone(triangleMesh, 2, degreesInRad_90);
+           }
+
+           function addTreeMeshClone(fromMesh, yToAdd, angle) {
+
+            var cloneMesh = fromMesh.clone();
+                cloneMesh.position.y += yToAdd;
+                cloneMesh.position.z += 0.001 * yToAdd;
+                cloneMesh.rotation.y = angle;
+               scene.add(cloneMesh);
+                treeMeshes.push(cloneMesh);
+           }
+
+           function createHouse() {
+                var houseGeometry = new THREE.Geometry();
+                houseGeometry.vertices.push(new THREE.Vector3(-2.0,  2.0, 2.0));// front
+                houseGeometry.vertices.push(new THREE.Vector3( 2.0,  2.0, 2.0));
+                houseGeometry.vertices.push(new THREE.Vector3( 2.0, -2.0, 2.0));
+                houseGeometry.vertices.push(new THREE.Vector3(-2.0, -2.0, 2.0));
+
+                houseGeometry.vertices.push(new THREE.Vector3(-2.0,  2.0, -2.0)); //back
+                houseGeometry.vertices.push(new THREE.Vector3( 2.0,  2.0, -2.0));
+                houseGeometry.vertices.push(new THREE.Vector3( 2.0, -2.0, -2.0));
+                houseGeometry.vertices.push(new THREE.Vector3(-2.0, -2.0, -2.0));
+
+                
+                houseGeometry.vertices.push(new THREE.Vector3( 0.0, 4.0, 2.0)); //roof
+                houseGeometry.vertices.push(new THREE.Vector3( 0.0, 4.0, -2.0));
+
+                houseGeometry.vertices.push(new THREE.Vector3(-0.5,  0.0, 2.001));// door
+                houseGeometry.vertices.push(new THREE.Vector3( 0.5,  0.0, 2.001));
+                houseGeometry.vertices.push(new THREE.Vector3( 0.5, -2.0, 2.001));
+                houseGeometry.vertices.push(new THREE.Vector3(-0.5, -2.0, 2.001));
+
+                houseGeometry.vertices.push(new THREE.Vector3(-2.001,  0.0, 0.5)); //window
+                houseGeometry.vertices.push(new THREE.Vector3(-2.001, -1, 0.5));
+                houseGeometry.vertices.push(new THREE.Vector3(-2.001, 0.0, -0.5));
+                houseGeometry.vertices.push(new THREE.Vector3(-2.001, -1, -0.5));
+
+
+                houseGeometry.faces.push(new THREE.Face3(0, 1, 2)); //front
+			   houseGeometry.faces.push(new THREE.Face3(0, 2, 3));
+
+			   houseGeometry.faces.push(new THREE.Face3(0, 3, 4)); //side
+			   houseGeometry.faces.push(new THREE.Face3(3, 7, 4));
+
+
+
+			   houseGeometry.faces.push(new THREE.Face3(0, 1, 8)); //roof - front
+               
+			   houseGeometry.faces.push(new THREE.Face3(0, 4, 8)); //roof - left
+			   houseGeometry.faces.push(new THREE.Face3(4, 9, 8));
+
+			   houseGeometry.faces.push(new THREE.Face3(1, 5, 8)); //roof - right
+			   houseGeometry.faces.push(new THREE.Face3(5, 9, 8));
+
+               houseGeometry.faces.push(new THREE.Face3(10, 11, 12)); //door
+			   houseGeometry.faces.push(new THREE.Face3(10, 12, 13));
+
+               houseGeometry.faces.push(new THREE.Face3(14, 15, 16)); //window
+			   houseGeometry.faces.push(new THREE.Face3(15, 16, 17));
+
+
+               var frontColor = 0xfffff0;
+               houseGeometry.faces[0].vertexColors[0] = new THREE.Color(frontColor);
+               houseGeometry.faces[0].vertexColors[1] = new THREE.Color(frontColor);
+               houseGeometry.faces[0].vertexColors[2] = new THREE.Color(frontColor);
+               houseGeometry.faces[1].vertexColors[0] = new THREE.Color(frontColor);
+               houseGeometry.faces[1].vertexColors[1] = new THREE.Color(frontColor);
+               houseGeometry.faces[1].vertexColors[2] = new THREE.Color(frontColor);
+
+               var sideColor = 0xf7f7cd;
+               houseGeometry.faces[2].vertexColors[0] = new THREE.Color(sideColor);
+               houseGeometry.faces[2].vertexColors[1] = new THREE.Color(sideColor);
+               houseGeometry.faces[2].vertexColors[2] = new THREE.Color(sideColor);
+               houseGeometry.faces[3].vertexColors[0] = new THREE.Color(sideColor);
+               houseGeometry.faces[3].vertexColors[1] = new THREE.Color(sideColor);
+               houseGeometry.faces[3].vertexColors[2] = new THREE.Color(sideColor);
+               
+               var roofFrontColor = 0xdbae72;
+               houseGeometry.faces[4].vertexColors[0] = new THREE.Color(roofFrontColor);
+               houseGeometry.faces[4].vertexColors[1] = new THREE.Color(roofFrontColor);
+               houseGeometry.faces[4].vertexColors[2] = new THREE.Color(roofFrontColor);
+               
+               var roofLeftColor = 0x9e661c;
+               houseGeometry.faces[5].vertexColors[0] = new THREE.Color(roofLeftColor);
+               houseGeometry.faces[5].vertexColors[1] = new THREE.Color(roofLeftColor);
+               houseGeometry.faces[5].vertexColors[2] = new THREE.Color(roofLeftColor);
+               houseGeometry.faces[6].vertexColors[0] = new THREE.Color(roofLeftColor);
+               houseGeometry.faces[6].vertexColors[1] = new THREE.Color(roofLeftColor);
+               houseGeometry.faces[6].vertexColors[2] = new THREE.Color(roofLeftColor);
+               
+               var roofRightColor = 0x73460b;
+               houseGeometry.faces[7].vertexColors[0] = new THREE.Color(roofRightColor);
+               houseGeometry.faces[7].vertexColors[1] = new THREE.Color(roofRightColor);
+               houseGeometry.faces[7].vertexColors[2] = new THREE.Color(roofRightColor);
+               houseGeometry.faces[8].vertexColors[0] = new THREE.Color(roofRightColor);
+               houseGeometry.faces[8].vertexColors[1] = new THREE.Color(roofRightColor);
+               houseGeometry.faces[8].vertexColors[2] = new THREE.Color(roofRightColor);
+               
+               var doorColor = 0x5e4019;
+               houseGeometry.faces[9].vertexColors[0] = new THREE.Color(doorColor);
+               houseGeometry.faces[9].vertexColors[1] = new THREE.Color(doorColor);
+               houseGeometry.faces[9].vertexColors[2] = new THREE.Color(doorColor);
+               houseGeometry.faces[10].vertexColors[0] = new THREE.Color(doorColor);
+               houseGeometry.faces[10].vertexColors[1] = new THREE.Color(doorColor);
+               houseGeometry.faces[10].vertexColors[2] = new THREE.Color(doorColor);
+
+               var windowColor = 0x18678f;
+               houseGeometry.faces[11].vertexColors[0] = new THREE.Color(windowColor);
+               houseGeometry.faces[11].vertexColors[1] = new THREE.Color(windowColor);
+               houseGeometry.faces[11].vertexColors[2] = new THREE.Color(windowColor);
+               houseGeometry.faces[12].vertexColors[0] = new THREE.Color(windowColor);
+               houseGeometry.faces[12].vertexColors[1] = new THREE.Color(windowColor);
+               houseGeometry.faces[12].vertexColors[2] = new THREE.Color(windowColor);
+
+               var houseMaterial = new THREE.MeshBasicMaterial({
+                   vertexColors:THREE.VertexColors,
+                   side:THREE.DoubleSide
+               });
+
+               var houseMesh = new THREE.Mesh(houseGeometry, houseMaterial);
+               houseMesh.position.set(4, 1.0, 4.0);
+               houseMesh.rotation.y += 0.4;
+               
+               scene.add(houseMesh);
+           }
+
+           function createGround() {
+                var groundGeometry = new THREE.Geometry();
+               groundGeometry.vertices.push(new THREE.Vector3(-30.0,  30.0, 0.0));
+               groundGeometry.vertices.push(new THREE.Vector3( 30.0,  30.0, 0.0));
+               groundGeometry.vertices.push(new THREE.Vector3( 30.0, -30.0, 0.0));
+               groundGeometry.vertices.push(new THREE.Vector3(-30.0, -30.0, 0.0));
+               groundGeometry.faces.push(new THREE.Face3(0, 1, 2));
+			   groundGeometry.faces.push(new THREE.Face3(0, 2, 3));
+
+               groundGeometry.faces[0].vertexColors[0] = new THREE.Color('darkgreen');
+               groundGeometry.faces[0].vertexColors[1] = new THREE.Color('lightgreen');
+               groundGeometry.faces[0].vertexColors[2] = new THREE.Color('lightgreen');
+
+               groundGeometry.faces[1].vertexColors[0] = new THREE.Color('darkgreen');
+               groundGeometry.faces[1].vertexColors[1] = new THREE.Color('lightgreen');
+               groundGeometry.faces[1].vertexColors[2] = new THREE.Color('darkgreen');
+
+               var groundMaterial = new THREE.MeshBasicMaterial({
+                   vertexColors:THREE.VertexColors,
+                   side:THREE.DoubleSide
+               });
+
+               var groundMesh = new THREE.Mesh(groundGeometry, groundMaterial);
+               groundMesh.position.set(1.5, -1.0, 4.0);
+               groundMesh.rotation.x = degreesInRad_90;
+               
+               scene.add(groundMesh);
+           }
+
+           function animateScene(){
+               if(isCameraGoingUp) {
+                    camera.position.y += 0.03;
+                    if(camera.position.y > 8) isCameraGoingUp = false;
+               } else {
+                   camera.position.y -= 0.03
+                   if(camera.position.y < -0.5) isCameraGoingUp = true;
+               }
+                camera.lookAt(scene.position);
+
+                treeMeshes.forEach(function(item, index, array) {
+                    item.rotation.y += 0.03;
+                });
+
+               requestAnimationFrame(animateScene);
+
+               renderScene();
+           }
+
+           function renderScene(){
+               renderer.render(scene, camera);
+           }
+       </script>
+     </body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Three.js - Lights - Ambient</title>
+    <style>
+html, body {
+  margin: 0;
+  height: 100%;
+}
+#c {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+    </style>
+  </head>
+  <body>
+     <div id="WebGLCanvas"> </div> 
+	 <div id="Stats-output"> </div>  
+     <canvas id="c"></canvas>
+  <script  type="importmap">{
+	"imports": {
+		"three": "https://threejs.org/build/three.module.js",
+		"three/addons/": "https://threejs.org/examples/jsm/"
+	}
+}</script>
+  </body>
+
+  <script type="module">
+// Three.js - Lights - Ambient
+// from https://threejs.org/manual/examples/lights-ambient.html
+
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
+import  Stats  from 'three/addons/libs/stats.module.js';
+
+
+
+	const canvas = document.querySelector( '#c' );
+	const renderer = new THREE.WebGLRenderer( { antialias: true, canvas} );
+
+	const fov = 45;
+	const aspect = window.innerWidth/window.innerHeight  //2; // the canvas default
+	const near = 0.1;
+	const far = 100;
+	const camera = new THREE.PerspectiveCamera( fov, aspect, near, far );
+	camera.position.set( 0, 0, 10 );
+
+	const controls = new OrbitControls( camera, canvas );
+	controls.target.set( 0, 0, 0 );
+	controls.update();
+
+	const scene = new THREE.Scene();
+	scene.background = new THREE.Color( 'black' );
+	
+	 var stats = initStats();  
+	
+	
+	// Initialize the scene
+             init();
+ 
+    // Render the scene (map the 3D world to the 2D scene)
+             render();
+
+	
+
+	function init(){
+                 
+                
+                  
+                 // Set the background color of the renderer to black, with full opacity
+                 renderer.setClearColor(0x000000, 1);
+ 
+                 // Get the size of the inner window (content area) to create a full size renderer
+                 const canvasWidth = window.innerWidth;
+                 const canvasHeight = window.innerHeight;
+ 
+                 // Set the renderers size to the content areas size
+                 renderer.setSize(canvasWidth, canvasHeight);
+ 
+                 // Get the DIV element from the HTML document by its ID and append the renderers DOM
+                 // object to it
+                 //document.getElementById("WebGLCanvas").appendChild(renderer.domElement);
+				 //document.body.appendChild(stats.dom)
+                 //document.getElementById("Stats-output").appendChild(renderer.domElement);				 
+
+                  
+                 // Create the scene, in which all objects are stored (e. g. camera, lights,
+                 // geometries, ...)
+                 //const scene = new THREE.Scene();
+ 
+                 // Define camera and add it to the scene.
+                 //camera = new THREE.PerspectiveCamera(45, canvasWidth / canvasHeight, 1, 100);
+                 camera.position.set(0, 0, 10);
+                 camera.lookAt(scene.position);
+                 scene.add(camera);
+
+                 //ctr = new OrbitControls( camera);
+				 //ctr.addEventListener( 'change', renderScene );
+				 
+				 const axesHelper = new THREE.AxesHelper( 5 );
+                 scene.add( axesHelper );
+                 
+ 
+                 // Create the triangle (or any arbitrary geometry) based on specified vertices.
+				 // Three.js r124 is the highest version that accepts Geometry class
+				 // For higher revisions you have to use BufferGeometry class instead with slightly different code
+                 const  triangleGeometry = new THREE.BufferGeometry();
+				 
+				 const vertices = [0.0, 1.0, 0.0,  -1.0, -1.0, 0.0,  1.0, -1.0, 0.0];
+				 const indices =  [2, 1, 0];
+				 
+				 triangleGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+                 triangleGeometry.setIndex(indices);
+                 
+                 const triangleMaterial = new THREE.MeshBasicMaterial({
+                     color: 0xFFFFFF,      // You may use 'white' instead
+                     side:THREE.BackSide   // alternatives: FrontSide  DoubleSide
+                 });
+ 
+                 // Create a mesh and insert the geometry and the material. Translate the whole mesh
+                 // by -1.5 on the x axis and by 4 on the z axis. Finally add the mesh to the scene.
+                 const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial);
+                 triangleMesh.position.set(-1.5, 0.0, 4.0);
+                 scene.add(triangleMesh);
+ 
+                 // The creation of the square is done in the same way as the triangle.
+                 // 1. Instantiate the geometry object
+                 // 2. Add the vertices
+                 // 3. Define the faces by setting the vertices indices
+                 var squareGeometry = new THREE.BufferGeometry();
+				 const vertices2 = [-1.0, 1.0, 0.0,  1.0, 1.0, 0.0,  1.0, -1.0, 0.0,  -1.0, -1.0, 0.0];
+				 const indices2 =  [0, 1, 2,   0, 2, 3];
+				 
+				 squareGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices2, 3));
+                 squareGeometry.setIndex(indices2);
+                 
+ 
+                 // Create a white basic material and activate the 'Doubleside' attribute 
+				 // (alternatives are: 'FrontSide' and 'BackSide')
+                 var squareMaterial = new THREE.MeshBasicMaterial({
+                     color:0xFFFFFF,
+                     side:THREE.DoubleSide
+                 });
+ 
+                 // Create a mesh object and insert the geometry and the material. Translate the whole mesh
+                 // by 1.5 on the x axis and by 4 on the z axis and add the mesh to the scene.
+                 var squareMesh = new THREE.Mesh(squareGeometry, squareMaterial);
+                 squareMesh.position.set(1.5, 0.0, 4.0);
+                 scene.add(squareMesh);
+             }
+ 	
+	
+
+	function resizeRendererToDisplaySize( renderer ) {
+
+		const canvas = renderer.domElement;
+		const width = canvas.clientWidth;
+		const height = canvas.clientHeight;
+		const needResize = canvas.width !== width || canvas.height !== height;
+		if ( needResize ) {
+
+			renderer.setSize( width, height, false );
+
+		}
+
+		return needResize;
+
+	}
+
+	function render() {
+
+		//if ( resizeRendererToDisplaySize( renderer ) ) {
+
+		//	const canvas = renderer.domElement;
+		//	camera.aspect = canvas.clientWidth / canvas.clientHeight;
+		//	camera.updateProjectionMatrix();
+
+		//}
+		
+		stats.update();
+
+		renderer.render( scene, camera );
+
+		requestAnimationFrame( render );     // needed for OrbitControls
+
+	}
+	
+	 function initStats() {
+
+            var stats = new Stats();
+
+            stats.setMode(0); // 0: fps, 1: ms
+
+            // Align top-left
+            stats.domElement.style.position = 'absolute';
+            stats.domElement.style.left = '0px';
+            stats.domElement.style.top = '0px';
+
+            document.getElementById("Stats-output").appendChild(stats.domElement);
+
+            return stats;
+        }
+
+	
+
+
+
+  </script>
+
+</html>
