@@ -1,0 +1,2 @@
+# Laboratorium 5 - Kolizje
+Proszę zmodyfikować układ z kulkami np. poprzez: dołożenie przeszkód na podłożu, od którego odbijają się kulki, huśtanie się podłoża, zmianę częstotliwości generowania kulek, lub jeszcze coś innego. Można wygenerować pudło, które wypełnia się kulkami, aż się z niego wysypują. Kulki mogą się przesypywać z jednego pudła do drugiego, ... i co jeszcze przyjdzie Państwu do głowy. 
